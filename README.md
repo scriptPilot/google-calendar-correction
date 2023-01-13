@@ -51,7 +51,7 @@ After any modification to the correction function, you should run the function `
 
 1. Clone this repository
 2. Run `clasp login` to login to Google if not done before
-3. Run `clasp create --type standalone --rootDir lib --title "Google Calendar Corrections"` to create a new Apps Script Project
+3. Run `clasp create --type standalone --rootDir lib --title "Google Calendar Correction"` to create a new Apps Script Project
 
 ### Workflow
 
