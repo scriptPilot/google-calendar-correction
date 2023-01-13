@@ -23,7 +23,7 @@ Now, on every calendar update, the events are corrected automatically if require
 
 ### Reset
 
-To reset the user properties to allow a correction from the start date again, run the script `resetProperties()`.
+After any modification to the correction function, you should run the function `resetProperties()` to reset the script and allow correction of all events from the start date again accordingly.
 
 ## Changelog
 
