@@ -14,16 +14,16 @@ Apply corrections to Google Calendar events on any update to enforce golden rule
 
 1. Create a trigger for the `onCalendarUpdate` function, triggered by calendar updates
 
-Now, on every calendar update, the correction function will apply changes to the events if required.
+Now, on every calendar update, the events are corrected automatically if required.
 
 ### Multiple Calendars
 
-1. Copy the `onCalendarUpdate` function, for example as `onOfficeCalendarUpdate` or `onFamilyCalendarUpdate`
-2. Create a trigger per calendar, select each time a different correction function and insert a different calendar ID
+1. Copy the `onCalendarUpdate` function, for example as `onWorkCalendarUpdate` or `onFamilyCalendarUpdate`
+2. Create a trigger per calendar, select each time a different `on...` function and insert a different calendar ID
 
 ### Reset
 
-To reset the user properties to allow a correction from the start date again, run the script `resetProperties()`.
+After any modification to the correction function, you should run the function `resetScript()` to reset the script and allow correction of all events from the start date again accordingly.
 
 ## Changelog
 
