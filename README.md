@@ -32,7 +32,7 @@ Create a trigger per calendar, select each time a different `on...CalendarUpdate
 
 ### Reset
 
-After any modification to the correction function, you should run the function `resetScript()` to reset the script and allow correction of all events from the start date again accordingly. You can do this manually by running the `onCalendarUpdate()` function.
+After any modification to the correction function, you should run the function `resetScript()` to reset the script and allow correction of all events from the start date again accordingly.
 
 ## Changelog
 
