@@ -23,7 +23,7 @@ Now, on every calendar update, the events are corrected automatically if require
 
 ### Reset
 
-After any modification to the correction function, you should run the function `resetScript()` to reset the script and allow correction of all events from the start date again accordingly. Afterwards, you can run the function `onCalendarUpdate()` manually.
+After any modification to the correction function, you should run the function `resetScript()` to reset the script and allow correction of all events from the start date again accordingly. You can do this manually by running the `onCalendarUpdate()` function.
 
 ## Changelog
 
