@@ -1,22 +1,31 @@
+// This function is called by the trigger
+// You should modify the name, start date and correction function to your needs
 function onCalendarUpdate() {
+  // Run the correction with some options
   runCorrection(
-    'Work',         // calendar name
-    '2023-01-01',   // start date as YYYY-MM-DD
-    event => {      // correction function
-      event.colorId = event.transparency === 'transparent' ? 8 : 4
+    // The name of the calendar
+    'Work',         
+    // The start date (YYYY-MM-DD, corrections are applied from this date)
+    '2023-01-01',  
+    // Correction function, event as input 
+    event => {     
+      // In this example, "busy" events are painted red, "free" events green 
+      event.colorId = event.transparency === 'transparent' ? 10 : 11
+      // Do not forget to return the corrected event
       return event
     }
   )
 }
 
+// This function reset the script
+// Run it after changing the correction functions
+// It is not required to change this code
 function resetProperties() {
-
-  // Reset all last update values
-  // Will allow a correction from the start date again
-  PropertiesService.getUserProperties().deleteAllProperties()
-  
+  PropertiesService.getUserProperties().deleteAllProperties()  
 }
 
+// This function runs the correction itself
+// It is not required to change this code
 function runCorrection(calendarName, startDate, correctionFunction) {
 
   // Log correction start
