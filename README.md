@@ -1,10 +1,6 @@
 # Google Calendar Correction
 
-> Google Calendar Event Correction with Google Apps Script.
-
-## Purpose
-
-Apply corrections to Google Calendar events on any update to enforce golen rules.
+Apply corrections to Google Calendar events on any update to enforce golden rules. Made with Google Apps Script.
 
 ## Installation
 
