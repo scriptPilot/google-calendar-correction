@@ -8,9 +8,15 @@ function onCalendarUpdate() {
     }
   )
 }
+
 function resetProperties() {
+
+  // Reset all last update values
+  // Will allow a correction from the start date again
   PropertiesService.getUserProperties().deleteAllProperties()
+  
 }
+
 function runCorrection(calendarName, startDate, correctionFunction) {
 
   // Log correction start

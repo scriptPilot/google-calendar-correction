@@ -28,7 +28,7 @@ fs.readdir('lib', (err, files) => {
   })
 
   // Merge and write code blocks to Code.gs file
-  fs.writeFileSync('Code.gs', codeBlocks.join('\n'))
+  fs.writeFileSync('Code.gs', codeBlocks.join('\n\n'))
 
   // Log script completion
   console.log('Code.gs file updated.')
