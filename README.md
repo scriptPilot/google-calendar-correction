@@ -14,7 +14,9 @@ Apply corrections to Google Calendar events on any update to enforce golden rule
 
 ### Manually
 
-Run the function `onCalendarUpdate()` to correct all events from the start date or which have been modfied after the last run.
+Run the function `onCalendarUpdate()` to correct all events from the start date.
+
+At the first run, all events are corrected. With any other run, only modified events after the start date are corrected.
 
 ### Trigger
 
