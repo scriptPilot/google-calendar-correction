@@ -12,6 +12,8 @@ Apply corrections to Google Calendar events on any update to enforce golden rule
 
 ## Usage
 
+### Trigger
+
 Create a trigger for the `onCalendarUpdate` function, triggered by calendar updates.
 
 Now, on every calendar update, the events are corrected automatically if required.
