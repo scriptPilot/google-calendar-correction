@@ -5,7 +5,7 @@ Apply corrections to Google Calendar events on any update to enforce golden rule
 ## Installation
 
 1. Open [Google Apps Script](https://script.google.com/) and create a new project `Google Calendar Correction`
-2. Replace `Code.gs` file content with [this code](Code.gs)
+2. Replace `Code.gs` file content with [this code](dist/Code.gs)
 3. Modify the correction function in `onCalendarUpdate` according to your needs ([Google API Documentation](https://developers.google.com/calendar/api/v3/reference/events))
 4. Click on the `+` next to `Services`, add `Google Calendar API v3` as `Calendar`
 5. Save and run the function `onCalendarUpdate` and grant permissions (calendar access)

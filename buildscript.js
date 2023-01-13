@@ -27,8 +27,11 @@ fs.readdir('lib', (err, files) => {
 
   })
 
+  // Create a dist folder if not exist
+  if (!fs.existsSync('dist')) fs.mkdirSync('dist')
+
   // Merge and write code blocks to Code.gs file
-  fs.writeFileSync('Code.gs', codeBlocks.join('\n\n'))
+  fs.writeFileSync('dist/Code.gs', codeBlocks.join('\n\n'))
 
   // Log script completion
   console.log('Code.gs file updated.')
