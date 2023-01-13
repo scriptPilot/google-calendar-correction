@@ -18,7 +18,7 @@ Now, on every calendar update, the events are corrected automatically if require
 
 ### Multiple Calendars
 
-1. Copy the `onCalendarUpdate` function, for example as `onOfficeCalendarUpdate` or `onFamilyCalendarUpdate`
+1. Copy the `onCalendarUpdate` function, for example as `onWorkCalendarUpdate` or `onFamilyCalendarUpdate`
 2. Create a trigger per calendar, select each time a different correction function and insert a different calendar ID
 
 ### Reset
