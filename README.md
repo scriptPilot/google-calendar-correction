@@ -1,5 +1,7 @@
 # Google Calendar Correction
 
+> Google Calendar Event Correction with Google Apps Script.
+
 ## Purpose
 
 Apply corrections to Google Calendar events on any update to enforce golen rules.
