@@ -40,7 +40,7 @@ After any modification to the correction function, you should run the function `
 
 - Initial release
 
-## Developers
+## Development
 
 ### Requirements
 
@@ -53,12 +53,9 @@ After any modification to the correction function, you should run the function `
 2. Run `clasp login` to login to Google if not done before
 3. Run `clasp create --type standalone --rootDir lib --title "Google Calendar Corrections"` to create a new Apps Script Project
 
-### Development
+### Workflow
 
 * Run `clasp open` to open the project in the [Cloud IDE](https://script.google.com/)
 * Run `clasp push` to replace the remote files with the local ones
 * Run `clasp pull` to replace the local files with the remote ones
-
-### Build
-
 * Run `node buildscript.js` to build the `Code.gs` file
