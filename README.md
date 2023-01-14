@@ -6,11 +6,46 @@ Apply corrections to Google Calendar events on any update to enforce golden rule
 
 1. Open [Google Apps Script](https://script.google.com/) and create a new project `Google Calendar Correction`
 2. Replace `Code.gs` file content with [this code](dist/Code.gs)
-3. Modify the `onCalendarUpdate` function to your needs ([Google API Documentation](https://developers.google.com/calendar/api/v3/reference/events), [color IDs](https://storage.googleapis.com/support-forums-api/attachment/message-114058730-1008415079352027267.jpg))
-4. Click on the `+` next to `Services`, add `Google Calendar API v3` as `Calendar`
-5. Save and run the function `onCalendarUpdate` and grant permissions (calendar access)
+3. Click at the `+` next to `Services`, add `Google Calendar API v3` as `Calendar`
 
 ## Usage
+
+Click at the `+` next to `Files` to add a new script file, you can name it `rules`.
+
+Now you can copy and paste the following example:
+
+```js
+// This function is called by the trigger
+// You should modify the name, start date and correction function to your needs
+function onCalendarUpdate() {
+  // Run the correction with some options
+  runCorrection(
+    // The name of the calendar
+    'Work',         
+    // The start date (YYYY-MM-DD, corrections are applied from this date)
+    '2023-01-01',  
+    // Correction function, event as input 
+    event => {     
+      // In this example, "busy" events are painted red, "free" events green 
+      event.colorId = event.transparency === 'transparent' ? 10 : 11
+      // Do not forget to return the corrected event
+      return event
+    }
+  )
+}
+```
+
+At least you have to modify the calendar name to any existing calendar name.
+
+The start date will allow to start with the corrections at a certain date.
+
+The correction function allows you to modify any event according to your own golden rules.
+- [Google API Documentation](https://developers.google.com/calendar/api/v3/reference/events)
+- [color IDs](https://storage.googleapis.com/support-forums-api/attachment/message-114058730-1008415079352027267.jpg))
+
+Finally, save the changes and run the `onCalendarUpdate` function manually.
+
+On the first run, you have to grant permissions (calendar access) to the script.
 
 ### Manually
 
@@ -40,6 +75,11 @@ After any modification to the `onCalendarUpdate` function, you should run the fu
 
 - Initial release
 
+### v1.1
+
+- `onCalendarUpdate` function removed from the `Code.gs` file
+- `.clasp.json` file removed from the repository
+
 ## Development
 
 ### Requirements
@@ -52,10 +92,11 @@ After any modification to the `onCalendarUpdate` function, you should run the fu
 1. Clone this repository
 2. Run `clasp login` to login to Google if not done before
 3. Run `clasp create --type standalone --rootDir lib --title "Google Calendar Correction"` to create a new Apps Script Project
+4. Run `mv lib/.clasp.json .clasp.json` to move the CLASP config file to the project root
 
 ### Workflow
 
-* Run `clasp open` to open the project in the [Cloud IDE](https://script.google.com/)
 * Run `clasp push` to replace the remote files with the local ones
+* Run `clasp open` to open the project in the [Cloud IDE](https://script.google.com/)
 * Run `clasp pull` to replace the local files with the remote ones
 * Run `node buildscript.js` to build the `Code.gs` file
