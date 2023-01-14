@@ -10,7 +10,7 @@ Apply corrections to Google Calendar events on any update to enforce golden rule
 
 ## Usage
 
-Click at the `+` next to `Files` to add a new script file, you can name it `onCalendarChange`.
+Click at the `+` next to `Files` to add a new script file, you can name it `onCalendarUpdate`.
 
 Now you can copy and paste the following example:
 
