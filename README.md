@@ -2,7 +2,7 @@
 
 Apply corrections to Google Calendar events on any update to enforce golden rules. Made with Google Apps Script.
 
-Relates to [Google Calendar Synchronization](https://github.com/scriptPilot/google-calendar-synchronization).
+Related to [Google Calendar Synchronization](https://github.com/scriptPilot/google-calendar-synchronization).
 
 ## Installation
 
