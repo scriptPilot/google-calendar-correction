@@ -35,13 +35,7 @@ function onCalendarUpdate() {
 }
 ```
 
-At least you have to modify the calendar name to any existing calendar name.
-
-The start date will allow to start with the corrections at a certain date.
-
-The correction function allows you to modify any event according to your own golden rules.
-- [Google API Documentation](https://developers.google.com/calendar/api/v3/reference/events)
-- [color IDs](https://storage.googleapis.com/support-forums-api/attachment/message-114058730-1008415079352027267.jpg))
+The code is commented. Further reading for the correction function: [Google API Documentation](https://developers.google.com/calendar/api/v3/reference/events) and [color IDs](https://storage.googleapis.com/support-forums-api/attachment/message-114058730-1008415079352027267.jpg)
 
 Finally, save the changes and run the `onCalendarUpdate` function manually.
 
@@ -62,6 +56,21 @@ Now, on every calendar update, the events are corrected automatically if require
 ### Multiple Calendars
 
 Copy the `onCalendarUpdate` function, for example as `onWorkCalendarUpdate` or `onFamilyCalendarUpdate`.
+
+```js
+onWorkCalendarUpdate() {
+  runCorrection('Work', '2023-01-01', event => {
+    ...
+    return event
+  })
+}
+onFamilyCalendarUpdate() {
+  runCorrection('Family', '2023-01-01', event => {
+    ...
+    return event
+  })
+}
+```
 
 Create a trigger per calendar, select each time a different `on...CalendarUpdate` function and insert a different calendar ID.
 
