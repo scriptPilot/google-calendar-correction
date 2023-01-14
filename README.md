@@ -15,6 +15,17 @@ Click at the `+` next to `Files` to add a new script file, you can name it `onCa
 Now you can copy and paste the following example code:
 
 ```js
+function onCalendarUpdate() {
+  runCorrection('Work', '2023-01-01', event => {     
+    event.colorId = event.transparency === 'transparent' ? 10 : 11
+    return event
+  })
+}
+```
+
+Or with comments:
+
+```js
 // This function is called by the trigger
 // You should modify the name, start date and correction function to your needs
 function onCalendarUpdate() {
@@ -32,17 +43,6 @@ function onCalendarUpdate() {
       return event
     }
   )
-}
-```
-
-Or without comments:
-
-```js
-function onCalendarUpdate() {
-  runCorrection('Work', '2023-01-01', event => {     
-    event.colorId = event.transparency === 'transparent' ? 10 : 11
-    return event
-  })
 }
 ```
 
