@@ -49,7 +49,7 @@ At the first run, all events after the start date are corrected. With any other 
 
 ### Trigger
 
-Create a trigger for the `onCalendarUpdate` function, triggered by calendar updates.
+Create a trigger for the `onCalendarUpdate` function, triggered by calendar updates and with the respected calendar id.
 
 Now, on every calendar update, the events are corrected automatically if required.
 
