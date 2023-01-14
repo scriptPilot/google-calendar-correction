@@ -35,7 +35,18 @@ function onCalendarUpdate() {
 }
 ```
 
-The code is commented. Further reading for the correction function: [Google API Documentation](https://developers.google.com/calendar/api/v3/reference/events) and [color IDs](https://storage.googleapis.com/support-forums-api/attachment/message-114058730-1008415079352027267.jpg)
+Or without comments:
+
+```js
+function onCalendarUpdate() {
+  runCorrection('Work', '2023-01-01', event => {     
+    event.colorId = event.transparency === 'transparent' ? 10 : 11
+    return event
+  })
+}
+```
+
+Further reading for the correction function: [Google API Documentation](https://developers.google.com/calendar/api/v3/reference/events) and [color IDs](https://storage.googleapis.com/support-forums-api/attachment/message-114058730-1008415079352027267.jpg)
 
 Finally, save the changes and run the `onCalendarUpdate` function manually.
 
