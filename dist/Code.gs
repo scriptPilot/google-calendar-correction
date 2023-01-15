@@ -9,6 +9,10 @@ function runCorrection(calendarName, startDate, correctionFunction) {
   // Log correction start
   console.info(`Correction started for calendar "${calendarName}".`)
 
+  // Lock the script to avoid corrupt data (up to 30 Min)
+  const lock = LockService.getUserLock()
+  lock.waitLock(30*60*1000)
+
   // Get calendar by name
   let calendar = null
   Calendar.CalendarList.list().items.forEach(cal => {
@@ -76,6 +80,9 @@ function runCorrection(calendarName, startDate, correctionFunction) {
 
   // Save last update to properties
   PropertiesService.getUserProperties().setProperty(calendar.id, nextLastUpdate.toISOString())
+
+  // Release the lock
+  lock.releaseLock()
 
   // Log correction end
   console.info('Correction completed.')
