@@ -88,6 +88,14 @@ onFamilyCalendarUpdate() {
 
 Create a trigger per calendar, select each time a different `on...CalendarUpdate` function and insert a different calendar ID.
 
+### Exclude synchronized events
+
+Events created by the [Google Calendar Synchronization](https://github.com/scriptPilot/google-calendar-synchronization) can be excluded from correction:
+
+```js
+if (event.extendedProperties?.private?.sourceCalendarId) return event
+```
+
 ### Reset
 
 After any modification to the `onCalendarUpdate` function, you should run the function `resetScript` to reset the script and allow correction of all events from the start date again accordingly.
