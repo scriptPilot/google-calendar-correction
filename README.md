@@ -93,7 +93,10 @@ Create a trigger per calendar, select each time a different `on...CalendarUpdate
 Events created by the [Google Calendar Synchronization](https://github.com/scriptPilot/google-calendar-synchronization) can be excluded from correction:
 
 ```js
-if (event.extendedProperties?.private?.sourceCalendarId) return event
+runCorrection('Family', '2023-01-01', event => {
+  if (event.extendedProperties?.private?.sourceCalendarId) return event
+  ...
+})
 ```
 
 ### Reset
