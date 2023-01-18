@@ -20,7 +20,7 @@ Now you can copy and paste the following example code:
 ```js
 function onCalendarUpdate() {
   runCorrection('Work', '2023-01-01', event => {     
-    event.colorId = event.transparency === 'transparent' ? 10 : 11
+    event.colorId = event.transparency === 'transparent' ? '10' : '11'
     return event
   })
 }
@@ -41,7 +41,7 @@ function onCalendarUpdate() {
     // Correction function, event as input 
     event => {     
       // In this example, "busy" events are painted red, "free" events green 
-      event.colorId = event.transparency === 'transparent' ? 10 : 11
+      event.colorId = event.transparency === 'transparent' ? '10' : '11'
       // Do not forget to return the corrected event
       return event
     }
@@ -87,6 +87,17 @@ onFamilyCalendarUpdate() {
 ```
 
 Create a trigger per calendar, select each time a different `on...CalendarUpdate` function and insert a different calendar ID.
+
+### Exclude synchronized events
+
+Events created by the [Google Calendar Synchronization](https://github.com/scriptPilot/google-calendar-synchronization) can be excluded from correction:
+
+```js
+runCorrection('Family', '2023-01-01', event => {
+  if (event.extendedProperties?.private?.sourceCalendarId) return event
+  ...
+})
+```
 
 ### Reset
 
