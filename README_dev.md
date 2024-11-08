@@ -42,7 +42,7 @@ Feel free to open an [issue](https://github.com/scriptPilot/google-calendar-corr
     ```
     clasp push && clasp open
     ````
-3. Test the changes in the Cloud IDE according to the doumentation.
+3. Test the changes in the Cloud IDE according to the documentation.
 4. Build the `dist/Code.gs` file:
 
     ```
@@ -50,7 +50,8 @@ Feel free to open an [issue](https://github.com/scriptPilot/google-calendar-corr
     ```
 
 5. Update the changelog.
-6. Commit and push the changes to GitHub.
+6. Set a new version tag in GitHub Desktop.
+7. Commit and push the changes to GitHub.
 
 ## Changelog
 
@@ -66,3 +67,10 @@ Feel free to open an [issue](https://github.com/scriptPilot/google-calendar-corr
 ### v1.2
 
 - consider hidden calendars
+
+### v2
+
+- lock script to avoid parallel run
+- accept differnt types of starDate
+- lot of helper functions
+- updated documentation

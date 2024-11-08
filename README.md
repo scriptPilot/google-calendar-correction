@@ -1,140 +1,140 @@
 # Google Calendar Correction
 
-Apply corrections to Google Calendar events on any update to enforce golden rules. Made with Google Apps Script.
+Apply corrections to Google Calendar events on any update to enforce golden rules.
 
-Related to [Google Calendar Synchronization](https://github.com/scriptPilot/google-calendar-synchronization).
+Made with Google Apps Script, related to [Google Calendar Synchronization](https://github.com/scriptPilot/google-calendar-synchronization).
 
 ## Installation
 
-1. Backup all Google Calendars to be able to restore them if something went wrong
-2. Open [Google Apps Script](https://script.google.com/) and create a new project `Google Calendar Correction`
-3. Replace `Code.gs` file content with [this code](dist/Code.gs)
-4. Click at the `+` next to `Services`, add `Google Calendar API v3` as `Calendar`
+1. Backup all Google Calendars to be able to restore them if something went wrong.
+2. Open [Google Apps Script](https://script.google.com/) and create a new project `Calendar Correction`.
+3. Replace the `Code.gs` file content with [this code](https://raw.githubusercontent.com/scriptPilot/google-calendar-correction/refs/heads/main/dist/Code.gs).
+4. Click at the `+` next to `Services`, add `Google Calendar API` `v3` as `Calendar`.
 
 ## Usage
 
-Click at the `+` next to `Files` to add a new script file, you can name it `onCalendarUpdate`.
+The following examples are based on assumed calendars `Work` and `Family`.
 
-Now you can copy and paste the following example code:
+### Correction
 
-```js
-function onCalendarUpdate() {
-  runCorrection('Work', '2023-01-01', event => {     
-    event.colorId = event.transparency === 'transparent' ? '10' : '11'
-    return event
-  })
-}
-```
+1. Click the `+` next to `Files` to add a new script file `onCalendarUpdate`:
 
-Or with comments:
+    ```js
+    function onCalendarUpdate() {
 
-```js
-// This function is called by the trigger
-// You should modify the name, start date and correction function to your needs
-function onCalendarUpdate() {
-  // Run the correction with some options
-  runCorrection(
-    // The name of the calendar
-    'Work',         
-    // The start date (YYYY-MM-DD, corrections are applied from this date)
-    '2023-01-01',  
-    // Correction function, event as input 
-    event => {     
-      // In this example, "busy" events are painted red, "free" events green 
-      event.colorId = event.transparency === 'transparent' ? '10' : '11'
-      // Do not forget to return the corrected event
-      return event
+      // Correction function
+      function correctionFunction(event) {
+
+        // Enforce the default calendar color
+        event.colorId = '0'
+
+        // Do not forget to return the event
+        return event
+        
+      }
+
+      // Run correction, start 7 days in the past
+      runCorrection('Work', 7, correctionFunction)
+
     }
-  )
-}
+    ```
+
+2. Save the changes and run the `onCalendarUpdate` function manually.
+
+    - Allow the prompt and grant the requested calendar access.
+    - At the first run, all events within the [time range](#time-range) are corrected.
+    - With any other run, only modified events are corrected.
+
+3. On the left menu, select "Trigger" and add a new trigger:
+
+    - run function `onCalendarUpdate`
+    - trigger source `calendar`
+    - calendar email `work-calendar-id` (to be found in the Google Calendar settings)
+
+Now, any change to the `Work` calendar is being corrected.
+
+Further reading for the correction function: [Google API Documentation](https://developers.google.com/calendar/api/v3/reference/events) and [color IDs](https://storage.googleapis.com/support-forums-api/attachment/message-114058730-1008415079352027267.jpg).
+
+### Start Date
+
+As start date you have several options.
+
+```js
+// Number of days in the past
+runCorrection('Work', 7, correctionFunction)
+
+// String in format "YYYY-MM-DD"
+runCorrection('Work', '2020-31-12', correctionFunction)
+
+// A date object
+const dateObj = new Date()
+dateObj.setHours(0, 0, 0, 0)
+dateObj.setDate(dateObj.getDate() - 7)
+runCorrection('Work', dateObj, correctionFunction)
+
 ```
 
-Further reading for the correction function: [Google API Documentation](https://developers.google.com/calendar/api/v3/reference/events) and [color IDs](https://storage.googleapis.com/support-forums-api/attachment/message-114058730-1008415079352027267.jpg)
+### Helper Functions
 
-Finally, save the changes and run the `onCalendarUpdate` function manually.
+There are a couple of helper function available to support the correction function.
 
-On the first run, you have to grant permissions (calendar access) to the script.
-
-### Manually
-
-Run the function `onCalendarUpdate()` to correct all events from the start date.
-
-At the first run, all events after the start date are corrected. With any other run, only modified events after the start date are corrected.
-
-### Trigger
-
-Create a trigger for the `onCalendarUpdate` function, triggered by calendar updates and with the respected calendar id.
-
-Now, on every calendar update, the events are corrected automatically if required.
+```js
+isSynchronizedEvent(sourceEvent) // true if synchronized from any other calendar
+isRecurringEvent(sourceEvent)    // true if recurring event
+isOOOEvent(sourceEvent)          // true if out of office event
+isAlldayEvent(sourceEvent)       // true if allday event
+isOnWeekend(sourceEvent)         // true if on Saturday or Sunday
+isBusyEvent(sourceEvent)         // true if status is busy
+isOpenByMe(sourceEvent)          // true if needs action by me
+isAcceptedByMe(sourceEvent)      // true if accepted by me
+isTentativeByMe(sourceEvent)     // true if responded tentative by me
+isDeclinedByMe(sourceEvent)      // true if declined by me
+```
 
 ### Multiple Calendars
 
-Copy the `onCalendarUpdate` function, for example as `onWorkCalendarUpdate` or `onFamilyCalendarUpdate`.
+#### Same correction function
 
 ```js
-onWorkCalendarUpdate() {
-  runCorrection('Work', '2023-01-01', event => {
-    ...
-    return event
-  })
+function onWorkCalendarUpdate() {
+  runCorrection('Work', correctionStartDate, correctionFunction)
 }
-onFamilyCalendarUpdate() {
-  runCorrection('Family', '2023-01-01', event => {
-    ...
-    return event
-  })
+
+function onFamilyCalendarUpdate() {
+  runCorrection('Family', correctionStartDate, correctionFunction)
 }
 ```
 
-Create a trigger per calendar, select each time a different `on...CalendarUpdate` function and insert a different calendar ID.
+Do not forget to configure two triggers respectively.
 
-### Exclude synchronized events
-
-Events created by the [Google Calendar Synchronization](https://github.com/scriptPilot/google-calendar-synchronization) can be excluded from correction:
+#### Different correction function
 
 ```js
-runCorrection('Family', '2023-01-01', event => {
-  if (event.extendedProperties?.private?.sourceCalendarId) return event
-  ...
-})
+function onWorkCalendarUpdate() {
+  runCorrection('Work', correctionStartDate, workCorrectionFunction)
+}
+
+function onFamilyCalendarUpdate() {
+  runCorrection('Family', correctionStartDate, familyCorrectionFunction)
+}
 ```
 
-### Reset
+Do not forget to configure two triggers respectively.
 
-After any modification to the `onCalendarUpdate` function, you should run the function `resetScript` to reset the script and allow correction of all events from the start date again accordingly.
+### Script Reset
 
-## Changelog
+By default, only updated events are corrected. To apply modified rules you want to reset the script to allow a full correction again. This can be done by running the function `resetScript` manually.
 
-### v1
+For test purpose, you can also add it to the beginning of the `onCalendarUpdate` function. Do not forget to remove it again after completing the development.
 
-- Initial release
+## Update
 
-### v1.1
+To update the script version, replace the `Code.gs` file content with [this code](https://raw.githubusercontent.com/scriptPilot/google-calendar-correction/refs/heads/main/dist/Code.gs).
 
-- `onCalendarUpdate` function removed from the `Code.gs` file
-- `.clasp.json` file removed from the repository
+## Deinstallation
 
-### v1.2
+Remove the Google Apps Script project. This will also remove all triggers.
 
-- consider hidden calendars
+## Support
 
-## Development
-
-### Requirements
-
-* [Node.js](https://nodejs.org/) and NPM installed
-* [Command Line Apps Script Projects](https://github.com/google/clasp) installed globally
-
-### Installation
-
-1. Clone this repository
-2. Run `clasp login` to login to Google if not done before
-3. Run `clasp create --type standalone --rootDir lib --title "Google Calendar Correction"` to create a new Apps Script Project
-4. Run `mv lib/.clasp.json .clasp.json` to move the CLASP config file to the project root
-
-### Workflow
-
-* Run `clasp push` to replace the remote files with the local ones
-* Run `clasp open` to open the project in the [Cloud IDE](https://script.google.com/)
-* Run `clasp pull` to replace the local files with the remote ones
-* Run `node buildscript.js` to build the `Code.gs` file
+Feel free to open an [issue](https://github.com/scriptPilot/google-calendar-correction/issues) for bugs, feature requests or any other question.
