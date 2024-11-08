@@ -79,16 +79,16 @@ runCorrection('Work', dateObj, correctionFunction)
 There are a couple of helper function available to support the correction function.
 
 ```js
-isSynchronizedEvent(sourceEvent) // true if synchronized from any other calendar
-isRecurringEvent(sourceEvent)    // true if recurring event
-isOOOEvent(sourceEvent)          // true if out of office event
-isAlldayEvent(sourceEvent)       // true if allday event
-isOnWeekend(sourceEvent)         // true if on Saturday or Sunday
-isBusyEvent(sourceEvent)         // true if status is busy
-isOpenByMe(sourceEvent)          // true if needs action by me
-isAcceptedByMe(sourceEvent)      // true if accepted by me
-isTentativeByMe(sourceEvent)     // true if responded tentative by me
-isDeclinedByMe(sourceEvent)      // true if declined by me
+isSynchronizedEvent(event) // true if synchronized from any other calendar
+isRecurringEvent(event)    // true if recurring event
+isOOOEvent(event)          // true if out of office event
+isAlldayEvent(event)       // true if allday event
+isOnWeekend(event)         // true if on Saturday or Sunday
+isBusyEvent(event)         // true if status is busy
+isOpenByMe(event)          // true if needs action by me
+isAcceptedByMe(event)      // true if accepted by me
+isTentativeByMe(event)     // true if responded tentative by me
+isDeclinedByMe(event)      // true if declined by me
 ```
 
 ### Multiple Calendars
