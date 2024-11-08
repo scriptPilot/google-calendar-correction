@@ -97,11 +97,11 @@ isDeclinedByMe(event)      // true if declined by me
 
 ```js
 function onWorkCalendarUpdate() {
-  runCorrection('Work', correctionStartDate, correctionFunction)
+  runCorrection('Work', 7, correctionFunction)
 }
 
 function onFamilyCalendarUpdate() {
-  runCorrection('Family', correctionStartDate, correctionFunction)
+  runCorrection('Family', 7, correctionFunction)
 }
 ```
 
@@ -111,11 +111,11 @@ Do not forget to configure two triggers respectively.
 
 ```js
 function onWorkCalendarUpdate() {
-  runCorrection('Work', correctionStartDate, workCorrectionFunction)
+  runCorrection('Work', 7, workCorrectionFunction)
 }
 
 function onFamilyCalendarUpdate() {
-  runCorrection('Family', correctionStartDate, familyCorrectionFunction)
+  runCorrection('Family', 7, familyCorrectionFunction)
 }
 ```
 
