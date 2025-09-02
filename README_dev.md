@@ -40,7 +40,7 @@ Feel free to open an [issue](https://github.com/scriptPilot/google-calendar-corr
 2. Push the changes to the [Cloud IDE](https://script.google.com/) and open the project:
 
     ```
-    clasp push && clasp open
+    clasp push && clasp open-script
     ````
 3. Test the changes in the Cloud IDE according to the documentation.
 4. Build the `dist/Code.gs` file:
