@@ -74,3 +74,7 @@ Feel free to open an [issue](https://github.com/scriptPilot/google-calendar-corr
 - accept differnt types of starDate
 - lot of helper functions
 - updated documentation
+
+### v2.1
+
+- improved locking and error handling to avoid parallel script runs and quota errors
