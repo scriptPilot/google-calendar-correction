@@ -1,4 +1,4 @@
-// Google Calendar Correction, build on 2025-09-02
+// Google Calendar Correction, build on 2025-09-05
 // Source: https://github.com/scriptPilot/google-calendar-correction
 
 function isSynchronizedEvent(event) {
@@ -131,8 +131,8 @@ function runCorrection(calendarName, startDate, correctionFunction) {
           const updatedEvent = Calendar.Events.update(correctedEvent, calendar.id, correctedEvent.id)
           console.info(`Updated event "${updatedEvent.summary}".`)
         } catch (error) {
-          console.error(`Failed to update event "${event.summary}".`)
-          console.error(error)
+          console.info(`Failed to update event "${event.summary}".`)
+          console.info(error)
         }
       // Original and corrected events are the same
       } else {
