@@ -1,4 +1,4 @@
-// Google Calendar Correction, build on 2025-09-02
+// Google Calendar Correction, build on 2025-09-05
 // Source: https://github.com/scriptPilot/google-calendar-correction
 
 function isSynchronizedEvent(event) {
@@ -113,8 +113,17 @@ function runCorrection(calendarName, startDate, correctionFunction) {
       pageToken = response.nextPageToken
     }
 
+    // Get script user's email
+    const scriptUserEmail = Session.getEffectiveUser().getEmail();
+
     // Loop modified events
     modifiedEvents.forEach(event => {
+      // Only correct if the event organizer is the script user
+      if (!event.organizer || event.organizer.email !== scriptUserEmail) {
+        console.info(`Skipped event "${event.summary}" because organizer is not the script user.`);
+        return;
+      }
+
       // Apply correction function (it is important to destructure the object to avoid any reference)
       const correctedEvent = correctionFunction({ ...event })
 
