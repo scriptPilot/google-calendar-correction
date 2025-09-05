@@ -136,7 +136,7 @@ function runCorrection(calendarName, startDate, correctionFunction) {
         }
       // Original and corrected events are the same
       } else {
-        console.info(`Skipped not corrected event "${event.summary}".`)
+        // do nothing
       }
     })
 
