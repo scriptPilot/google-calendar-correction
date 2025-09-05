@@ -78,3 +78,8 @@ Feel free to open an [issue](https://github.com/scriptPilot/google-calendar-corr
 ### v2.1
 
 - improved locking and error handling to avoid parallel script runs and quota errors
+
+### v2.3
+
+- show event update errors as information only to avoid script failure
+- do not show log for not corrected events
