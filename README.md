@@ -49,7 +49,7 @@ The following examples are based on assumed calendars `Work` and `Family`.
 
     - run function `onCalendarUpdate`
     - trigger source `calendar`
-    - calendar email `work-calendar-id` (to be found in the Google Calendar settings)
+    - calendar email `work-calendar-id` (to be found in the [Google Calendar settings](https://calendar.google.com/calendar/u/0/r/settings/calendar/primary))
 
 Now, any change to the `Work` calendar is being corrected.
 
