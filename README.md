@@ -42,7 +42,7 @@ The following examples are based on assumed calendars `Work` and `Family`.
 2. Save the changes and run the `onCalendarUpdate` function manually.
 
     - Allow the prompt and grant the requested calendar access.
-    - At the first run, all events from the [start date](#start-date) are corrected.
+    - At the first run, all events after the [start date](#start-date) are corrected.
     - With any other run, only modified events are corrected.
 
 3. On the left menu, select "Trigger" and add a new trigger:
