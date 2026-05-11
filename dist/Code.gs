@@ -1,4 +1,4 @@
-// Google Calendar Correction, build on 2025-09-05
+// Google Calendar Correction, build on 2026-05-11
 // Source: https://github.com/scriptPilot/google-calendar-correction
 
 function isSynchronizedEvent(event) {
@@ -19,9 +19,6 @@ function isBusyEvent(event) {
   return event.transparency !== 'transparent' && !isOOOEvent(event)
 }
 
-function isSynchronizedEvent(event) {
-  return event.extendedProperties?.private?.sourceCalendarId !== undefined
-}
 
 function isRecurringEvent(event) {
   return event.recurringEventId !== undefined
