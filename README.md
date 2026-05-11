@@ -6,7 +6,7 @@ Made with Google Apps Script, related to [Google Calendar Synchronization](https
 
 ## Installation
 
-1. [Backup](https://calendar.google.com/calendar/u/0/r/settings/export) all Google Calendars to be able to restore them if something went wrong.
+1. [Backup all Google Calendars](https://calendar.google.com/calendar/u/0/r/settings/export) to be able to restore them if something went wrong.
 2. Open [Google Apps Script](https://script.google.com/) and create a new project `Calendar Correction`.
 3. Replace the `Code.gs` file content with [this code](https://raw.githubusercontent.com/scriptPilot/google-calendar-correction/refs/heads/main/dist/Code.gs).
 4. Click at the `+` next to `Services`, add `Google Calendar API` `v3` as `Calendar`.
@@ -42,7 +42,7 @@ The following examples are based on assumed calendars `Work` and `Family`.
 2. Save the changes and run the `onCalendarUpdate` function manually.
 
     - Allow the prompt and grant the requested calendar access.
-    - At the first run, all events within the [time range](https://github.com/scriptPilot/google-calendar-synchronization#time-range) are corrected.
+    - At the first run, all events from the [start date](#start-date) are corrected.
     - With any other run, only modified events are corrected.
 
 3. On the left menu, select "Trigger" and add a new trigger:
