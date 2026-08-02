@@ -84,7 +84,7 @@ Feel free to open an [issue](https://github.com/scriptPilot/google-calendar-corr
 - show event update errors as information only to avoid script failure
 - do not show log for not corrected events
 
-### v2.4
+### v2.5
 
 - fix `DEADLINE_EXCEEDED` failures caused by unbounded processing and the trigger/lock storm
 - limit the runtime of a single script call to a time budget
