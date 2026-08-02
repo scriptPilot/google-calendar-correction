@@ -83,3 +83,12 @@ Feel free to open an [issue](https://github.com/scriptPilot/google-calendar-corr
 
 - show event update errors as information only to avoid script failure
 - do not show log for not corrected events
+
+### v2.4
+
+- fix `DEADLINE_EXCEEDED` failures caused by unbounded processing and the trigger/lock storm
+- limit the runtime of a single script call to a time budget
+- save pagination state so a timed out run continues instead of restarting from scratch
+- use a short lock wait instead of blocking queued trigger calls for up to 30 minutes
+- retry transient API errors (e.g. `Backend Error`) and expired pagination tokens
+- add progress logs to follow the correction of large calendars
