@@ -1,4 +1,4 @@
-// Google Calendar Correction, build on 2026-08-02
+// Google Calendar Correction, build on 2026-08-05
 // Source: https://github.com/scriptPilot/google-calendar-correction
 
 function isSynchronizedEvent(event) {
@@ -51,7 +51,7 @@ function runCorrection(calendarName, startDate, correctionFunction) {
   console.info(`Correction started for calendar "${calendarName}".`)
 
   // Limit the runtime of a single script call to avoid the DEADLINE_EXCEEDED error
-  const MAX_RUNTIME_MS = 4 * 60 * 1000
+  const MAX_RUNTIME_MS = 3.5 * 60 * 1000
 
   // Page size of the events list request
   const PAGE_SIZE = 100
@@ -85,7 +85,7 @@ function runCorrection(calendarName, startDate, correctionFunction) {
   // Lock the script to avoid corrupt data
   // A short wait bridges a running script call without blocking queued calls for minutes
   const lock = LockService.getUserLock()
-  if (!lock.tryLock(10 * 1000)) {
+  if (!lock.tryLock(1000)) {
     console.info('Script call skipped because another script call is running.')
     return
   }
@@ -186,13 +186,13 @@ function runCorrection(calendarName, startDate, correctionFunction) {
           break
         }
 
-        // Apply correction function (it is important to destructure the object to avoid any reference)
-        const correctedEvent = correctionFunction({ ...event })
+        // Apply correction function (it is important to deeply clone the object to avoid any reference)
+        const correctedEvent = correctionFunction(JSON.parse(JSON.stringify(event)))
 
         // Compare events
-        // Get keys, order them and connect their values as a long string
-        const eventString = Object.keys(event).sort().map(key => event[key]).join('')
-        const correctedEventString = Object.keys(correctedEvent).sort().map(key => correctedEvent[key]).join('')
+        // JSON.stringify provides a reliable deep comparison
+        const eventString = JSON.stringify(event)
+        const correctedEventString = JSON.stringify(correctedEvent)
         const sameEvents = eventString === correctedEventString
 
         // Original and corrected events are not the same
@@ -201,6 +201,8 @@ function runCorrection(calendarName, startDate, correctionFunction) {
           try {
             const updatedEvent = Calendar.Events.update(correctedEvent, calendar.id, correctedEvent.id)
             console.info(`Updated event "${updatedEvent.summary}".`)
+            // Sleep to avoid rate limiting (500 requests per 100 seconds)
+            Utilities.sleep(250)
           } catch (error) {
             console.info(`Failed to update event "${event.summary}".`)
             console.info(error)
