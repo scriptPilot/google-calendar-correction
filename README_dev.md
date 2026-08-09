@@ -28,12 +28,6 @@ Feel free to open an [issue](https://github.com/scriptPilot/google-calendar-corr
     clasp create --type standalone --rootDir lib --title "Google Calendar Correction"
     ```
 
-4. Move the hidden `.clasp.json` file to the project root:
-
-    ```
-    mv lib/.clasp.json .clasp.json
-    ```
-
 ## Workflow
 
 1. Apply changes to the code and documentation.
@@ -84,6 +78,10 @@ Feel free to open an [issue](https://github.com/scriptPilot/google-calendar-corr
 - show event update errors as information only to avoid script failure
 - do not show log for not corrected events
 
+### v2.4
+
+- calendar-trigger-based execution with locking
+
 ### v2.5
 
 - fix `DEADLINE_EXCEEDED` failures caused by unbounded processing and the trigger/lock storm
@@ -92,3 +90,16 @@ Feel free to open an [issue](https://github.com/scriptPilot/google-calendar-corr
 - use a short lock wait instead of blocking queued trigger calls for up to 30 minutes
 - retry transient API errors (e.g. `Backend Error`) and expired pagination tokens
 - add progress logs to follow the correction of large calendars
+
+### v3.0
+
+- replace calendar-trigger-based execution with time-based triggers to eliminate race conditions
+- `onCalendarUpdate` entry point replaced by `onStart`
+- add `start()`, `stop()` and `startFallback()` functions for trigger management
+- add `setCorrectionInterval()` and `setMaxExecutionTime()` for configuration
+- remove locking (no longer needed with sequential time-based triggers)
+- remove pagination save/resume (no longer needed without concurrent runs)
+- restructure source code into `lib/` and `lib/helper/` directories
+- add `isOpenByMe`, `isAcceptedByMe`, `isTentativeByMe` helper functions
+- simplify `pastDays` parameter (only integer, like sync project)
+- add `startOfWeek`, `startOfMonth`, `startOfQuarter`, `startOfHalfyear`, `startOfYear` date helpers

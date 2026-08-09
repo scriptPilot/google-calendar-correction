@@ -1,5 +1,262 @@
-// Google Calendar Correction, build on 2026-08-05
+// Google Calendar Correction, build on 2026-08-09
 // Source: https://github.com/scriptPilot/google-calendar-correction
+
+function start() {
+  if (typeof onStart !== "function") {
+    throw new Error(
+      "onStart() function is missing - please check the documentation",
+    )
+  }
+
+  onStart.calledByStartFunction = true
+
+  setCorrectionInterval()
+  setMaxExecutionTime()
+
+  createTrigger("startFallback", onStart.correctionInterval + 1)
+
+  PropertiesService.getUserProperties().deleteProperty("stopNote")
+
+  try {
+    onStart()
+  } catch (err) {
+    Logger.log("An error occured during the correction")
+    Logger.log(`Message: ${err.message}`)
+  }
+
+  if (PropertiesService.getUserProperties().getProperty("stopNote") !== null) {
+    Logger.log("Correction stopped.")
+    return
+  }
+
+  createTrigger("start", onStart.correctionInterval)
+
+  createTrigger("startFallback", onStart.correctionInterval + 1)
+}
+
+function stop() {
+  deleteTrigger("start")
+  deleteTrigger("startFallback")
+
+  PropertiesService.getUserProperties().setProperty("stopNote", true)
+
+  Logger.log("The correction will not run again")
+  Logger.log("If the script is currently running, it will complete")
+}
+
+function runCorrection(calendarName, pastDays, correctionFunction) {
+
+  console.info(`Correction started for calendar "${calendarName}".`)
+
+  const MAX_RUNTIME_MS = 3.5 * 60 * 1000
+  const PAGE_SIZE = 100
+
+  const isGone = (error) => {
+    const message = String((error && error.message) || '')
+    return message.indexOf('GONE') >= 0 || message.indexOf('410') >= 0
+  }
+
+  const callWithRetry = (call, maxAttempts = 3) => {
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        return call()
+      } catch (error) {
+        if (attempt === maxAttempts || isGone(error)) throw error
+        Utilities.sleep(1000 * attempt)
+      }
+    }
+  }
+
+  let calendar = null
+  const calendarList = callWithRetry(() => Calendar.CalendarList.list({ showHidden: true })).items || []
+  calendarList.forEach(cal => {
+    if (cal.summaryOverride === calendarName || cal.summary === calendarName) calendar = cal
+  })
+  if (!calendar) throw new Error(`Calendar ${calendarName} not found.`)
+
+  const todayMorning = new Date()
+  todayMorning.setHours(0, 0, 0, 0)
+  const startDate = new Date(todayMorning.getTime() - pastDays * 24 * 60 * 60 * 1000)
+
+  const props = PropertiesService.getUserProperties()
+  const lastUpdate = new Date(props.getProperty(calendar.id))
+  const nextLastUpdate = new Date()
+
+  const deadline = Date.now() + MAX_RUNTIME_MS
+
+  let completed = false
+  let pageToken = null
+  let page = 0
+
+  while (!completed && Date.now() < deadline) {
+    let response
+    try {
+      response = callWithRetry(() => Calendar.Events.list(
+        calendar.id,
+        {
+          pageToken,
+          showDeleted: false,
+          timeMin: startDate.toISOString(),
+          updatedMin: lastUpdate.toISOString(),
+          maxResults: PAGE_SIZE
+        }
+      ))
+    } catch (error) {
+      if (isGone(error)) {
+        pageToken = null
+        console.info('Page token expired, restarting pagination.')
+        continue
+      }
+      throw error
+    }
+
+    const items = response.items || []
+    let processedAll = true
+    for (const event of items) {
+      if (event.status === 'cancelled') continue
+      if (Date.now() >= deadline) {
+        processedAll = false
+        break
+      }
+
+      const correctedEvent = correctionFunction(JSON.parse(JSON.stringify(event)))
+
+      const eventString = JSON.stringify(event)
+      const correctedEventString = JSON.stringify(correctedEvent)
+      const sameEvents = eventString === correctedEventString
+
+      if (!sameEvents) {
+        try {
+          const updatedEvent = Calendar.Events.update(correctedEvent, calendar.id, correctedEvent.id)
+          console.info(`Updated event "${updatedEvent.summary}".`)
+          Utilities.sleep(250)
+        } catch (error) {
+          console.info(`Failed to update event "${event.summary}".`)
+          console.info(error)
+        }
+      }
+    }
+
+    pageToken = response.nextPageToken
+    if (processedAll) {
+      page++
+      if (pageToken) {
+        console.info(`Processed page ${page}.`)
+      } else {
+        completed = true
+      }
+    }
+  }
+
+  if (completed) {
+    props.setProperty(calendar.id, nextLastUpdate.toISOString())
+    console.info('Correction completed.')
+  } else {
+    console.info('Correction timed out, will resume on next run.')
+  }
+}
+
+function createTrigger(functionName, minutes) {
+  if (functionName === "startFallback") {
+    minutes =
+      minutes >= 30
+        ? minutes
+        : minutes > 15
+          ? 30
+          : minutes > 10
+            ? 15
+            : minutes > 5
+              ? 10
+              : 5
+
+    let newTrigger = null
+    if (minutes <= 30) {
+      newTrigger = ScriptApp.newTrigger(functionName)
+        .timeBased()
+        .everyMinutes(minutes)
+        .create()
+    } else {
+      newTrigger = ScriptApp.newTrigger(functionName)
+        .timeBased()
+        .everyHours(1)
+        .create()
+    }
+    deleteTrigger(functionName, newTrigger.getUniqueId())
+  } else {
+    deleteTrigger(functionName)
+    ScriptApp.newTrigger(functionName)
+      .timeBased()
+      .after(minutes * 60 * 1000)
+      .create()
+  }
+  Logger.log(
+    `Trigger created for the ${functionName}() function ${functionName === "startFallback" ? "every" : "in"} ${minutes} minute${minutes !== 1 ? "s" : ""}`,
+  )
+}
+
+function daysAgo(date) {
+  const todayMorning = new Date()
+  todayMorning.setHours(0, 0, 0, 0)
+  return Math.floor((todayMorning.getTime() - date.getTime()) / (24 * 60 * 60 * 1000))
+}
+
+function startOfWeek(offset = 0) {
+  const todayMorning = new Date()
+  todayMorning.setHours(0, 0, 0, 0)
+  const dayOfWeek = todayMorning.getDay()
+  const mondayOffset = dayOfWeek === 0 ? 6 : dayOfWeek - 1
+  const target = new Date(todayMorning.getTime() - (mondayOffset + offset * 7) * 24 * 60 * 60 * 1000)
+  return daysAgo(target)
+}
+
+function startOfMonth(offset = 0) {
+  const target = new Date()
+  target.setHours(0, 0, 0, 0)
+  target.setMonth(target.getMonth() - offset)
+  target.setDate(1)
+  return daysAgo(target)
+}
+
+function startOfQuarter(offset = 0) {
+  const target = new Date()
+  target.setHours(0, 0, 0, 0)
+  const currentMonth = target.getMonth()
+  const quarterStartMonth = Math.floor(currentMonth / 3) * 3 - offset * 3
+  target.setMonth(quarterStartMonth)
+  target.setDate(1)
+  return daysAgo(target)
+}
+
+function startOfHalfyear(offset = 0) {
+  const target = new Date()
+  target.setHours(0, 0, 0, 0)
+  const currentMonth = target.getMonth()
+  const halfyearStartMonth = Math.floor(currentMonth / 6) * 6 - offset * 6
+  target.setMonth(halfyearStartMonth)
+  target.setDate(1)
+  return daysAgo(target)
+}
+
+function startOfYear(offset = 0) {
+  const target = new Date()
+  target.setHours(0, 0, 0, 0)
+  target.setMonth(0 - offset * 12)
+  target.setDate(1)
+  return daysAgo(target)
+}
+
+function deleteTrigger(functionName, exclude = null) {
+  let triggers = ScriptApp.getProjectTriggers()
+  for (let trigger of triggers) {
+    if (
+      trigger.getHandlerFunction() === functionName &&
+      trigger.getUniqueId() !== exclude
+    ) {
+      ScriptApp.deleteTrigger(trigger)
+      Logger.log(`Existing trigger deleted for the ${functionName}() function`)
+    }
+  }
+}
 
 function isSynchronizedEvent(event) {
   return event.extendedProperties?.private?.sourceCalendarId !== undefined
@@ -19,9 +276,25 @@ function isBusyEvent(event) {
   return event.transparency !== 'transparent' && !isOOOEvent(event)
 }
 
-
-function isRecurringEvent(event) {
+function isRecurringEvent(event) {
   return event.recurringEventId !== undefined
+}
+
+function isOnWeekend(event) {
+  const startDate = new Date(event.start.dateTime || event.start.date)
+  return startDate.getDay() === 6 || startDate.getDay() === 0
+}
+
+function isOpenByMe(event) {
+  return event.attendees?.filter(attendee => attendee.email === Session.getEffectiveUser().getEmail())[0]?.responseStatus === 'needsAction'
+}
+
+function isAcceptedByMe(event) {
+  return event.attendees?.filter(attendee => attendee.email === Session.getEffectiveUser().getEmail())[0]?.responseStatus === 'accepted'
+}
+
+function isTentativeByMe(event) {
+  return event.attendees?.filter(attendee => attendee.email === Session.getEffectiveUser().getEmail())[0]?.responseStatus === 'tentative'
 }
 
 function isDeclinedByMe(event) {
@@ -33,212 +306,29 @@ function isOpenOrTentativeByMe(event) {
   return responseStatus === 'needsAction' || responseStatus === 'tentative'
 }
 
-function isOnWeekend(event) {
-  const startDate = new Date(event.start.dateTime || event.start.date)
-  return startDate.getDay() === 6 || startDate.getDay() === 0
-}
-
-// This function reset the script
 function resetScript() {
-  PropertiesService.getUserProperties().deleteAllProperties()  
+  PropertiesService.getUserProperties().deleteAllProperties()
   console.log('Script reset done.')
 }
 
-// This function runs the correction itself
-function runCorrection(calendarName, startDate, correctionFunction) {
-
-  // Log correction start
-  console.info(`Correction started for calendar "${calendarName}".`)
-
-  // Limit the runtime of a single script call to avoid the DEADLINE_EXCEEDED error
-  const MAX_RUNTIME_MS = 3.5 * 60 * 1000
-
-  // Page size of the events list request
-  const PAGE_SIZE = 100
-
-  // Check if an error indicates an expired page token
-  const isGone = (error) => {
-    const message = String((error && error.message) || '')
-    return message.indexOf('GONE') >= 0 || message.indexOf('410') >= 0
+function setCorrectionInterval(minutes = 1) {
+  if (!onStart.calledByStartFunction) {
+    throw new Error(
+      "Please select the Code.gs file and run the start() script.",
+    )
   }
+  onStart.correctionInterval = minutes
+}
 
-  // Call an API function and retry transient errors (e.g. Backend Error)
-  const callWithRetry = (call, maxAttempts = 3) => {
-    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-      try {
-        return call()
-      } catch (error) {
-        if (attempt === maxAttempts || isGone(error)) throw error
-        Utilities.sleep(1000 * attempt)
-      }
-    }
+function setMaxExecutionTime(minutes = 6) {
+  if (!onStart.calledByStartFunction) {
+    throw new Error(
+      "Please select the Code.gs file and run the start() script.",
+    )
   }
+  onStart.maxExecutionTime = minutes
+}
 
-  // Get calendar by name
-  let calendar = null
-  const calendarList = callWithRetry(() => Calendar.CalendarList.list({ showHidden: true })).items || []
-  calendarList.forEach(cal => {
-    if (cal.summaryOverride === calendarName || cal.summary === calendarName) calendar = cal
-  })
-  if (!calendar) throw new Error(`Calendar ${calendarName} not found.`)
-
-  // Lock the script to avoid corrupt data
-  // A short wait bridges a running script call without blocking queued calls for minutes
-  const lock = LockService.getUserLock()
-  if (!lock.tryLock(1000)) {
-    console.info('Script call skipped because another script call is running.')
-    return
-  }
-
-  try {
-
-    // Calculate start date based on days in the past
-    if (Number.isInteger(startDate)) {
-      const dateObj = new Date()
-      dateObj.setHours(0, 0, 0, 0)
-      startDate = new Date(dateObj.setDate(dateObj.getDate() - startDate))
-
-    // Accept YYYY-MM-DD to support v1
-    } else if (/^\d{4}-\d{2}-\d{2}$/.test(startDate)) {
-      startDate = new Date(parseInt(startDate.substr(0, 4)), parseInt(startDate.substr(5, 2) - 1), parseInt(startDate.substr(8, 2)))
-
-    // Try to create date as fallback solution
-    } else if (!(startDate instanceof Date)) {
-      startDate = new Date(startDate)
-    }
-
-    // Get last update from properties (if property is empty, last update will be 1970-01-01)
-    const props = PropertiesService.getUserProperties()
-    const lastUpdate = new Date(props.getProperty(calendar.id))
-
-    // Remove old waiting marker that is no longer used
-    props.deleteProperty(calendar.id + ':waiting')
-
-    // Remember current time to save later as last update time
-    const nextLastUpdate = new Date()
-
-    // Deadline to stop this script call before the execution time is exceeded
-    const deadline = Date.now() + MAX_RUNTIME_MS
-
-    // Restore a saved pagination state to continue an unfinished correction
-    // (this avoids restarting the whole correction after a timed out script call)
-    const resumeKey = calendar.id + ':resume'
-    let resume = null
-    try {
-      resume = JSON.parse(props.getProperty(resumeKey))
-    } catch (error) {
-      resume = null
-    }
-
-    // The pagination query must always use the exact same parameters
-    let pageToken = null
-    let queryUpdatedMin = lastUpdate
-    let queryStartDate = startDate
-    if (resume && resume.pageToken) {
-      try {
-        const resumeUpdatedMin = new Date(resume.updatedMin).getTime()
-        const resumeStartDate = new Date(resume.startDate).getTime()
-        if (resumeUpdatedMin === queryUpdatedMin.getTime() && resumeStartDate === queryStartDate.getTime()) {
-          pageToken = resume.pageToken
-          console.info('Resuming correction from saved progress.')
-        }
-      } catch (error) {
-        // ignore invalid resume state
-      }
-    }
-
-    // Get modified events (paginated), exclude deleted events
-    let completed = false
-    let page = 0
-    while (!completed && Date.now() < deadline) {
-      let response
-      try {
-        response = callWithRetry(() => Calendar.Events.list(
-          calendar.id,
-          {
-            pageToken,
-            showDeleted: false,
-            timeMin: queryStartDate.toISOString(),
-            updatedMin: queryUpdatedMin.toISOString(),
-            maxResults: PAGE_SIZE
-          }
-        ))
-      } catch (error) {
-        // An expired page token forces a restart from the last update
-        if (isGone(error)) {
-          props.deleteProperty(resumeKey)
-          pageToken = null
-          queryUpdatedMin = lastUpdate
-          queryStartDate = startDate
-          console.info('Saved progress expired, restarting correction.')
-          continue
-        }
-        throw error
-      }
-
-      // Loop modified events, exclude cancelled events
-      const items = response.items || []
-      let processedAll = true
-      for (const event of items) {
-        if (event.status === 'cancelled') continue
-        if (Date.now() >= deadline) {
-          processedAll = false
-          break
-        }
-
-        // Apply correction function (it is important to deeply clone the object to avoid any reference)
-        const correctedEvent = correctionFunction(JSON.parse(JSON.stringify(event)))
-
-        // Compare events
-        // JSON.stringify provides a reliable deep comparison
-        const eventString = JSON.stringify(event)
-        const correctedEventString = JSON.stringify(correctedEvent)
-        const sameEvents = eventString === correctedEventString
-
-        // Original and corrected events are not the same
-        if (!sameEvents) {
-          // Update event
-          try {
-            const updatedEvent = Calendar.Events.update(correctedEvent, calendar.id, correctedEvent.id)
-            console.info(`Updated event "${updatedEvent.summary}".`)
-            // Sleep to avoid rate limiting (500 requests per 100 seconds)
-            Utilities.sleep(250)
-          } catch (error) {
-            console.info(`Failed to update event "${event.summary}".`)
-            console.info(error)
-          }
-        }
-      }
-
-      // Only advance the pagination state after a fully processed page,
-      // otherwise a timed out script call would skip the remaining events
-      pageToken = response.nextPageToken
-      if (processedAll) {
-        page++
-        if (pageToken) {
-          props.setProperty(resumeKey, JSON.stringify({
-            pageToken,
-            updatedMin: queryUpdatedMin.toISOString(),
-            startDate: queryStartDate.toISOString()
-          }))
-          console.info(`Processed page ${page}.`)
-        } else {
-          completed = true
-          props.deleteProperty(resumeKey)
-        }
-      }
-    }
-
-    // Save last update to properties
-    if (completed) {
-      props.setProperty(calendar.id, nextLastUpdate.toISOString())
-      console.info('Correction completed.')
-    } else {
-      console.info('Correction progress saved, continuation will follow.')
-    }
-
-  } finally {
-    // Always release the lock
-    lock.releaseLock()
-  }
+function startFallback() {
+  start()
 }

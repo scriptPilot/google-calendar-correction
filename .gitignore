@@ -4,5 +4,6 @@
 # CLASP
 .clasp.json
 
-# onCalendarUpdate.js
-onCalendarUpdate.js
+# User file
+onStart.js
+onStart.gs

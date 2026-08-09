@@ -1,6 +1,6 @@
 # Google Calendar Correction
 
-Apply corrections to Google Calendar events on any update to enforce golden rules.
+Apply corrections to Google Calendar events on a regular schedule to enforce golden rules.
 
 Made with Google Apps Script, related to [Google Calendar Synchronization](https://github.com/scriptPilot/google-calendar-synchronization).
 
@@ -8,8 +8,8 @@ Made with Google Apps Script, related to [Google Calendar Synchronization](https
 
 1. [Backup all Google Calendars](https://calendar.google.com/calendar/u/0/r/settings/export) to be able to restore them if something went wrong.
 2. Open [Google Apps Script](https://script.google.com/) and create a new project `Calendar Correction`.
-3. Replace the `Code.gs` file content with [this code](https://raw.githubusercontent.com/scriptPilot/google-calendar-correction/refs/heads/main/dist/Code.gs).
-4. Click at the `+` next to `Services`, add `Google Calendar API` `v3` as `Calendar`.
+3. Click at the `+` next to `Services`, add `Google Calendar API` `v3` as `Calendar`.
+4. Replace the `Code.gs` file content with [this code](https://raw.githubusercontent.com/scriptPilot/google-calendar-correction/refs/heads/main/dist/Code.gs).
 
 ## Usage
 
@@ -17,10 +17,10 @@ The following examples are based on assumed calendars `Work` and `Family`.
 
 ### Correction
 
-1. Click the `+` next to `Files` to add a new script file `onCalendarUpdate`:
+1. Click the `+` next to `Files` to add a new script file `onStart`:
 
     ```js
-    function onCalendarUpdate() {
+    function onStart() {
 
       // Correction function
       function correctionFunction(event) {
@@ -39,93 +39,85 @@ The following examples are based on assumed calendars `Work` and `Family`.
     }
     ```
 
-2. Save the changes and run the `onCalendarUpdate` function manually.
+2. Save the changes, select the `Code.gs` file and run the `start` function.
 
     - Allow the prompt and grant the requested calendar access.
     - At the first run, all events after the [start date](#start-date) are corrected.
     - With any other run, only modified events are corrected.
+    - The correction repeats automatically every minute by default.
 
-3. On the left menu, select "Trigger" and add a new trigger:
-
-    - run function `onCalendarUpdate`
-    - trigger source `calendar`
-    - calendar email `work-calendar-id` (to be found in the [Google Calendar settings](https://calendar.google.com/calendar/u/0/r/settings/calendar/primary))
-
-Now, any change to the `Work` calendar is being corrected.
-
-Further reading for the correction function: [Google API Documentation](https://developers.google.com/calendar/api/v3/reference/events) and [color IDs](https://storage.googleapis.com/support-forums-api/attachment/message-114058730-1008415079352027267.jpg).
+3. To stop the correction, select the `Code.gs` file and run the `stop` function.
 
 ### Start Date
 
-As start date you have several options.
+The start date is specified as the number of days in the past.
+
+Example — correct all events since 7 days ago:
 
 ```js
-// Number of days in the past
 runCorrection('Work', 7, correctionFunction)
-
-// String in format "YYYY-MM-DD"
-runCorrection('Work', '2020-31-12', correctionFunction)
-
-// A date object
-const dateObj = new Date()
-dateObj.setHours(0, 0, 0, 0)
-dateObj.setDate(dateObj.getDate() - 7)
-runCorrection('Work', dateObj, correctionFunction)
-
 ```
 
-### Helper Functions
-
-There are a couple of helper function available to support the correction function.
+Helper functions are available for common time ranges:
 
 ```js
-isSynchronizedEvent(event) // true if synchronized from any other calendar
-isRecurringEvent(event)    // true if recurring event
-isOOOEvent(event)          // true if out of office event
-isAlldayEvent(event)       // true if allday event
-isOnWeekend(event)         // true if on Saturday or Sunday
-isBusyEvent(event)         // true if status is busy
-isOpenByMe(event)          // true if needs action by me
-isAcceptedByMe(event)      // true if accepted by me
-isTentativeByMe(event)     // true if responded tentative by me
-isDeclinedByMe(event)      // true if declined by me
+startOfWeek(offset = 0)       
+startOfMonth(offset = 0)
+startOfQuarter(offset = 0)
+startOfHalfyear(offset = 0)
+startOfYear(offset = 0)
+```
+
+Example — correct all events since the beginning of last week:
+
+```js
+runCorrection('Work', startOfWeek(-1), correctionFunction)
 ```
 
 ### Multiple Calendars
 
-#### Same correction function
+Multiple calendars can be corrected within the same `onStart` function.
 
 ```js
-function onWorkCalendarUpdate() {
-  runCorrection('Work', 7, correctionFunction)
-}
-
-function onFamilyCalendarUpdate() {
-  runCorrection('Family', 7, correctionFunction)
-}
-```
-
-Do not forget to configure two triggers respectively.
-
-#### Different correction function
-
-```js
-function onWorkCalendarUpdate() {
+function onStart() {
   runCorrection('Work', 7, workCorrectionFunction)
-}
-
-function onFamilyCalendarUpdate() {
   runCorrection('Family', 7, familyCorrectionFunction)
 }
 ```
 
-Do not forget to configure two triggers respectively.
+### Correction Interval
+
+The correction interval can be specified.
+
+By default, the next correction is triggered after `1` minute.
+
+This value can be increased, if the Google Calendar API quota is an issue.
+
+```js
+function onStart() {
+  setCorrectionInterval(10)
+  runCorrection('Work', 7, correctionFunction)
+} 
+```
+
+### Maximum Execution Time
+
+A fallback trigger starts the correction again, if the correction script is not completed within the maximum execution time.
+
+By default, the maximum execution time is `6` minutes.
+
+This value can be increased to make use of the increased Google Workspace limit of `30` minutes.
+
+```js
+function onStart() {
+  setMaxExecutionTime(30)
+  runCorrection('Work', 7, correctionFunction)
+} 
+```
 
 ### Script Reset
 
 By default, only updated events are corrected. To apply modified rules you want to reset the script to allow a full correction again. This can be done by running the function `resetScript` manually.
-
-For test purpose, you can also add it to the beginning of the `onCalendarUpdate` function. Do not forget to remove it again after completing the development.
 
 ## Update
 
@@ -133,7 +125,8 @@ To update the script version, replace the `Code.gs` file content with [this code
 
 ## Deinstallation
 
-Remove the Google Apps Script project. This will also remove all triggers.
+1. To stop the correction, select file `Code.gs` and run `stop()`.
+2. Remove the Google Apps Script project.
 
 ## Support
 
