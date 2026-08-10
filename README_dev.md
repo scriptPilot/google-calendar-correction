@@ -113,6 +113,12 @@ Feel free to open an [issue](https://github.com/scriptPilot/google-calendar-corr
 
 - re-add pagination resume: save page token and page number so timed-out runs continue from where they left off
 - share one deadline across all `runCorrection` calls within `onStart`, abort 5s before with 60s safety margin
+- retry `Backend Error` with up to 5 attempts and doubled backoff instead of failing after 3 short retries
 - `setMaxExecutionTime()` only logs when explicitly overridden
 - fallback trigger interval now `max(correctionInterval + 1, maxExecutionTime)`
 - add `AGENTS.md` with development workflow instructions
+
+### v3.3
+
+- skip calendar when deadline already passed instead of erroring with "Invalid argument"
+- validate `lastUpdate` property value to guard against corrupted data
