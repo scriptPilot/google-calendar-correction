@@ -1,7 +1,13 @@
-// Google Calendar Correction, build on 2026-08-09
+// Google Calendar Correction, build on 2026-08-10
 // Source: https://github.com/scriptPilot/google-calendar-correction
 
 function start() {
+  const lock = LockService.getScriptLock()
+  if (!lock.tryLock(1)) {
+    Logger.log("start() is already running - skipping this invocation")
+    return
+  }
+
   if (typeof onStart !== "function") {
     throw new Error(
       "onStart() function is missing - please check the documentation",
@@ -48,7 +54,7 @@ function runCorrection(calendarName, pastDays, correctionFunction) {
 
   console.info(`Correction started for calendar "${calendarName}".`)
 
-  const MAX_RUNTIME_MS = 3.5 * 60 * 1000
+  const MAX_RUNTIME_MS = (onStart.maxExecutionTime || 6) * 60 * 1000
   const PAGE_SIZE = 100
 
   const isGone = (error) => {
@@ -82,7 +88,7 @@ function runCorrection(calendarName, pastDays, correctionFunction) {
   const lastUpdate = new Date(props.getProperty(calendar.id))
   const nextLastUpdate = new Date()
 
-  const deadline = Date.now() + MAX_RUNTIME_MS
+  const deadline = Date.now() + MAX_RUNTIME_MS - 30 * 1000
 
   let completed = false
   let pageToken = null
@@ -327,6 +333,7 @@ function setMaxExecutionTime(minutes = 6) {
     )
   }
   onStart.maxExecutionTime = minutes
+  Logger.log(`Max execution time set to ${minutes} minute${minutes !== 1 ? "s" : ""}`)
 }
 
 function startFallback() {

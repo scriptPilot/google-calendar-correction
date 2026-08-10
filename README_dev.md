@@ -103,3 +103,8 @@ Feel free to open an [issue](https://github.com/scriptPilot/google-calendar-corr
 - add `isOpenByMe`, `isAcceptedByMe`, `isTentativeByMe` helper functions
 - simplify `pastDays` parameter (only integer, like sync project)
 - add `startOfWeek`, `startOfMonth`, `startOfQuarter`, `startOfHalfyear`, `startOfYear` date helpers
+
+### v3.1
+
+- add lock (`LockService.getScriptLock()`) to `start()` to prevent parallel executions from the fallback trigger
+- fix `setMaxExecutionTime()` was ignored by `runCorrection()` – now reads `onStart.maxExecutionTime` with 30s safety margin
