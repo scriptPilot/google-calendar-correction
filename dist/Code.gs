@@ -19,7 +19,9 @@ function start() {
   setCorrectionInterval()
   setMaxExecutionTime()
 
-  createTrigger("startFallback", onStart.correctionInterval + 1)
+  onStart.deadline = Date.now() + (onStart.maxExecutionTime || 6) * 60 * 1000 - 60 * 1000
+
+  createTrigger("startFallback", Math.max(onStart.correctionInterval + 1, onStart.maxExecutionTime))
 
   PropertiesService.getUserProperties().deleteProperty("stopNote")
 
@@ -37,7 +39,7 @@ function start() {
 
   createTrigger("start", onStart.correctionInterval)
 
-  createTrigger("startFallback", onStart.correctionInterval + 1)
+  createTrigger("startFallback", Math.max(onStart.correctionInterval + 1, onStart.maxExecutionTime))
 }
 
 function stop() {
@@ -54,7 +56,6 @@ function runCorrection(calendarName, pastDays, correctionFunction) {
 
   console.info(`Correction started for calendar "${calendarName}".`)
 
-  const MAX_RUNTIME_MS = (onStart.maxExecutionTime || 6) * 60 * 1000
   const PAGE_SIZE = 100
 
   const isGone = (error) => {
@@ -87,14 +88,26 @@ function runCorrection(calendarName, pastDays, correctionFunction) {
   const props = PropertiesService.getUserProperties()
   const lastUpdate = new Date(props.getProperty(calendar.id))
   const nextLastUpdate = new Date()
+  const pageTokenKey = `${calendar.id}_pageToken`
+  const pageNumberKey = `${calendar.id}_page`
 
-  const deadline = Date.now() + MAX_RUNTIME_MS - 30 * 1000
+  const deadline = onStart.deadline
 
   let completed = false
-  let pageToken = null
-  let page = 0
+  let pageToken = props.getProperty(pageTokenKey) || null
+  let page = parseInt(props.getProperty(pageNumberKey) || '0', 10)
+
+  if (pageToken) {
+    console.info(`Resuming from saved page token.`)
+  }
 
   while (!completed && Date.now() < deadline) {
+    if (Date.now() + 5000 >= deadline) {
+      props.setProperty(pageTokenKey, pageToken)
+      props.setProperty(pageNumberKey, page)
+      break
+    }
+
     let response
     try {
       response = callWithRetry(() => Calendar.Events.list(
@@ -110,6 +123,9 @@ function runCorrection(calendarName, pastDays, correctionFunction) {
     } catch (error) {
       if (isGone(error)) {
         pageToken = null
+        page = 0
+        props.deleteProperty(pageTokenKey)
+        props.deleteProperty(pageNumberKey)
         console.info('Page token expired, restarting pagination.')
         continue
       }
@@ -148,9 +164,16 @@ function runCorrection(calendarName, pastDays, correctionFunction) {
       page++
       if (pageToken) {
         console.info(`Processed page ${page}.`)
+        props.setProperty(pageTokenKey, pageToken)
+        props.setProperty(pageNumberKey, page)
       } else {
         completed = true
+        props.deleteProperty(pageTokenKey)
+        props.deleteProperty(pageNumberKey)
       }
+    } else {
+      props.setProperty(pageTokenKey, pageToken)
+      props.setProperty(pageNumberKey, page)
     }
   }
 
@@ -333,7 +356,9 @@ function setMaxExecutionTime(minutes = 6) {
     )
   }
   onStart.maxExecutionTime = minutes
-  Logger.log(`Max execution time set to ${minutes} minute${minutes !== 1 ? "s" : ""}`)
+  if (arguments.length > 0) {
+    Logger.log(`Max execution time set to ${minutes} minute${minutes !== 1 ? "s" : ""}`)
+  }
 }
 
 function startFallback() {

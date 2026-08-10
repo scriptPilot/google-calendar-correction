@@ -108,3 +108,11 @@ Feel free to open an [issue](https://github.com/scriptPilot/google-calendar-corr
 
 - add lock (`LockService.getScriptLock()`) to `start()` to prevent parallel executions from the fallback trigger
 - fix `setMaxExecutionTime()` was ignored by `runCorrection()` – now reads `onStart.maxExecutionTime` with 30s safety margin
+
+### v3.2
+
+- re-add pagination resume: save page token and page number so timed-out runs continue from where they left off
+- share one deadline across all `runCorrection` calls within `onStart`, abort 5s before with 60s safety margin
+- `setMaxExecutionTime()` only logs when explicitly overridden
+- fallback trigger interval now `max(correctionInterval + 1, maxExecutionTime)`
+- add `AGENTS.md` with development workflow instructions
