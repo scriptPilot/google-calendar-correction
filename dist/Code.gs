@@ -56,7 +56,7 @@ function runCorrection(calendarName, pastDays, correctionFunction) {
 
   console.info(`Correction started for calendar "${calendarName}".`)
 
-  const PAGE_SIZE = 100
+  const PAGE_SIZE = 25
 
   const isRetryable = (error) => {
     const message = String((error && error.message) || '')
