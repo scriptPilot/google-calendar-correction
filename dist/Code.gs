@@ -1,4 +1,4 @@
-// Google Calendar Correction, build on 2026-08-10
+// Google Calendar Correction, build on 2026-08-28
 // Source: https://github.com/scriptPilot/google-calendar-correction
 
 function start() {
