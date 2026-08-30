@@ -122,3 +122,16 @@ Feel free to open an [issue](https://github.com/scriptPilot/google-calendar-corr
 
 - skip calendar when deadline already passed instead of erroring with "Invalid argument"
 - validate `lastUpdate` property value to guard against corrupted data
+
+### v3.4
+
+- replace `updatedMin`-based change detection with `syncToken`-based incremental sync
+- fix extreme slowness with thousands of events in the trash: `updatedMin` makes the API return every event deleted since that time regardless of `showDeleted`, so the first run paginated through the whole trash
+- increase page size from 25 to 2500 (API maximum) to reduce the number of API calls by a factor of 100
+- full sync uses `showDeleted: true` and saves the `nextSyncToken` of the last page; incremental syncs pass only `syncToken` and finish with a single API call when nothing changed
+- skip deleted (`cancelled`) events and events outside the correction window client-side (`timeMin`/`updatedMin` are not allowed together with `syncToken`)
+- restart with a full sync when the sync token expired (`410 GONE`)
+- fix a timed-out page could be skipped entirely (the page token was advanced before saving, now the page is refetched on resume)
+- fix a `null` page token could be persisted as the string `"null"`, breaking all subsequent runs
+- clean up legacy `lastUpdate` properties from previous versions
+- fix README example for date helpers: `startOfWeek(-1)` points to the beginning of next week, the beginning of last week is `startOfWeek(1)` (helper unchanged, consistent with the synchronization project)

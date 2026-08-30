@@ -71,7 +71,7 @@ startOfYear(offset = 0)
 Example — correct all events since the beginning of last week:
 
 ```js
-runCorrection('Work', startOfWeek(-1), correctionFunction)
+runCorrection('Work', startOfWeek(1), correctionFunction)
 ```
 
 ### Multiple Calendars
